@@ -31,4 +31,4 @@
   :serial t
   :components ((:file "package")
                (:file "chat"))
-  :depends-on (:cl-completions))
+  :depends-on (:completions))
