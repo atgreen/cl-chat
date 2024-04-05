@@ -8,7 +8,7 @@ Usage
 ```
 $ ocicl install chat
 ```
-The `chat` is comically small; containing just one class definition and one method.  It simply maintains conversation state for `completions`-based conversations.
+The `chat` package is comically small; containing just one class definition and one method.  It simply maintains conversation state for `completions`-based conversations.
 
 In it's simplest form, use:
 ```common lisp
