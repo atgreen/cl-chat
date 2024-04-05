@@ -61,7 +61,7 @@ fiveam, ghcr.io/ocicl/iterate@sha256:b605c6d0144892db02c4fc50094b4f854813b0daac5
 net.didierverna.asdf-flv, ghcr.io/ocicl/iterate@sha256:b605c6d0144892db02c4fc50094b4f854813b0daac54c840f15ba0e921283851, iterate-20231229-26cf129/ext/asdf-flv/net.didierverna.asdf-flv.asd
 alexandria-tests, ghcr.io/ocicl/iterate@sha256:b605c6d0144892db02c4fc50094b4f854813b0daac54c840f15ba0e921283851, iterate-20231229-26cf129/ext/alexandria/alexandria-tests.asd
 iterate, ghcr.io/ocicl/iterate@sha256:b605c6d0144892db02c4fc50094b4f854813b0daac54c840f15ba0e921283851, iterate-20231229-26cf129/iterate.asd
-completions, ghcr.io/ocicl/completions@sha256:9308f2904b1f7a6e60f5872c7de663ba78f1d3dcfe854c824ea8222737036649, cl-completions-20240331-7932a81/completions.asd
+completions, ghcr.io/ocicl/completions@sha256:c975c19ddd9d646e563a2ecc3d6d4ac097bf11c949f9bb666b42c88f1126b305, cl-completions-20240405-93001d3/completions.asd
 drakma, ghcr.io/ocicl/drakma@sha256:f97482f430605ffd6684a8ec58c5cd154e09cf1c36dc3d51ffe6da1c1dc6cad1, drakma-2.0.9/drakma.asd
 drakma-test, ghcr.io/ocicl/drakma@sha256:f97482f430605ffd6684a8ec58c5cd154e09cf1c36dc3d51ffe6da1c1dc6cad1, drakma-2.0.9/drakma-test.asd
 chipz, ghcr.io/ocicl/chipz@sha256:be8df32dc47fae1a35c38398d76539140c79fda8d4b793cb2d03180871b020c7, chipz-20230809-6f80368/chipz.asd

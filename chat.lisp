@@ -36,6 +36,6 @@
       (get-completion (slot-value chat 'completer)
                       (append (slot-value chat 'messages)
                               `(((:role . "user") (:content . ,prompt))))
-                      1000)
+                      :max-tokens 1000)
     (setf (slot-value chat 'messages) messages)
     response))
