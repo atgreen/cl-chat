@@ -8,6 +8,23 @@ Usage
 ```
 $ ocicl install chat
 ```
+The `chat` is comically small; containing just one class definition and one method.  It simply maintains conversation state for `completions`-based conversations.
+
+In it's simplest form, use:
+```common lisp
+(let ((c (make-instance 'chat)))
+  (say c "Tell me a joke"))
+```
+
+The default chat LLM is OpenAI, and requires that the `OPENAI_API_KEY`
+environment variable be set.  However, you can also create chats using any LLM supported by
+the [completions](https://github.com/atgreen/cl-completions) package.  For instance:
+
+```common lisp
+(let ((c (make-instance 'chat :completer (make-instance 'completions:ollama-completer
+                                                        :model "mistral:latest"))))
+  (say c "Tell me a joke"))
+```
 
 This repo also includes a web-chat interface.  Run it like so:
 ```
