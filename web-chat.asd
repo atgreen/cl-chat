@@ -32,6 +32,8 @@
   :components ((:file "web-package")
                (:file "web-chat"))
   :depends-on (:chat
+               :3bmd
+               :3bmd-ext-code-blocks
                :hunchentoot
                :hunchensocket
                :log4cl

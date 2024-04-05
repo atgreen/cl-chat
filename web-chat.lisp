@@ -42,26 +42,20 @@
       <div class=\"flex max-w-3xl items-center\">
         <p>~A</p>
       </div>
-    </div>" msg)))))
-    str))
+    </div>"
+                         (with-output-to-string (s)
+                           (3bmd:parse-string-and-print-to-stream msg s)))))))
+    (cl-base64:string-to-base64-string str)))
+
+(setf 3bmd-code-blocks:*code-blocks* t)
 
 (defun render-ai-messages (messages)
   (let ((str (with-output-to-string (stream)
                (dolist (msg messages)
                  (format stream
-"    <div class=\"flex bg-slate-100 px-4 py-8 dark:bg-slate-900 sm:px-6\">
-      <img
-        class=\"mr-2 flex h-8 w-8 rounded-full sm:mr-4\"
-        src=\"https://dummyimage.com/256x256/354ea1/ffffff&text=G\"
-      />
-
-      <div
-        class=\"flex w-full flex-col items-start lg:flex-row lg:justify-between\"
-      >
-        <p class=\"max-w-3xl\">~A</p>
-</div></div>" msg)))))
-    (print str)
-    str))
+                         "<div class=\"flex bg-slate-100 px-4 py-8 dark:bg-slate-900 sm:px-6\"><img class=\"mr-2 flex h-8 w-8 rounded-full sm:mr-4\" src=\"https://dummyimage.com/256x256/354ea1/ffffff&text=G\" /><div class=\"flex w-full flex-col items-start lg:flex-row lg:justify-between\"> <p class=\"max-w-3xl\">~A</p></div></div>"                          (with-output-to-string (s)
+                           (3bmd:parse-string-and-print-to-stream msg s)))))))
+    (cl-base64:string-to-base64-string str)))
 
 (defun web-chat-root ()
   (fad:pathname-as-directory
@@ -210,16 +204,42 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('Connection opened');
     };
 
-    ws.onmessage = function(event) {
-        // Assuming the server sends HTML content
-        const receivedMsg = event.data;
-        messagesDiv.innerHTML += receivedMsg;
-        var element = document.getElementById("chat-messages")
-                                              element.scrollTop = element.scrollHeight;
-                                              waitCount = waitCount - 1;
-                                              if (waitCount == 0)
-                                                 document.body.style.cursor = "default";
-                                              };
+ws.onmessage = function(event) {
+    console.log(event.data)
+    const data = JSON.parse(event.data);
+
+    // Destructure the parsed data
+    const { type, message } = data;
+
+    // Find the messagesDiv as before
+    const messagesDiv = document.getElementById("chat-messages");
+
+    switch (type) {
+        case 'assistant':
+            console.log ("assistant message");
+            const lastDiv = messagesDiv.lastElementChild;
+            lastDiv.outerHTML = atob(message);
+            break;
+
+        case 'user':
+            console.log ("user message");
+            messagesDiv.innerHTML += atob(message);
+            messagesDiv.innerHTML += "<div></div>";
+            break;
+
+        default:
+            console.warn('Received unknown type of message:', type);
+    }
+
+    // Scroll to the bottom of the messages div, if applicable
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+    // Adjust cursor style after operation, if applicable
+    waitCount -= 1;
+    if (waitCount === 0) {
+        document.body.style.cursor = "default";
+    }
+};
 
     ws.onerror = function(event) {
         console.error('WebSocket error:', event);
@@ -250,13 +270,22 @@ document.addEventListener('DOMContentLoaded', () => {
 (defmethod hunchensocket:text-message-received ((room chat-room) user message)
   (let* ((json-as-list (json:decode-json-from-string message))
          (prompt (cdr (assoc :message json-as-list))))
-    (hunchensocket:send-text-message user (render-user-messages (list prompt)))
+    (hunchensocket:send-text-message user (format nil "{ \"type\": \"user\", \"message\": ~S }" (render-user-messages (list prompt))))
     (let* ((session-id (cdr (assoc :session-id json-as-list)))
            (session-data (gethash session-id *session-data*)))
       (log:info "Received prompt from session-id " session-id)
       (log:info session-data)
       (hunchensocket:send-text-message user
-                                       (render-ai-messages (list (chat:say (slot-value session-data 'chat) prompt)))))))
+        (let ((msg ""))
+          (format nil "{ \"type\": \"assistant\", \"message\": ~S }"
+                  (render-ai-messages (list (chat:say (slot-value session-data 'chat) (concatenate 'string "Respond to this prompt using pure markdown (but not in a markdown block).  Be sure to force a newline if you want for force formatting: " prompt)
+                                                      :streaming-callback
+                                                      (lambda (token)
+                                                        (format t "~A" token)
+                                                        (setf msg (concatenate 'string msg token))
+                                                        (format t msg)
+                                                        (hunchensocket:send-text-message user
+                                                          (format nil "{ \"type\": \"assistant\", \"message\": ~S }" (render-ai-messages (list msg))))))))))))))
 
 (pushnew 'find-room hunchensocket:*websocket-dispatch-table*)
 
@@ -281,7 +310,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       (hunchentoot:start *ws-server*)
 
-      (log:info "started ws server")
+      (log:info "Point your browser at http://localhost:8080")
 
       (loop
         do (progn

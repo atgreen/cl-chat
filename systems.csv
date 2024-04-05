@@ -69,3 +69,17 @@ cl-json, ghcr.io/ocicl/cl-json@sha256:d75461b4341199a996759751d0449b293733201e81
 parenscript.tests, ghcr.io/ocicl/parenscript@sha256:1d30a89387c5177db8aac75cd9e54b67660af1e9d6db5626948e8cadf14f0ce7, parenscript-20230809-1fd720b/parenscript.tests.asd
 parenscript, ghcr.io/ocicl/parenscript@sha256:1d30a89387c5177db8aac75cd9e54b67660af1e9d6db5626948e8cadf14f0ce7, parenscript-20230809-1fd720b/parenscript.asd
 anaphora, ghcr.io/ocicl/anaphora@sha256:c2b52a9e421065fb16c4137e0890b289e3919608c26cd7cfa550469914bcf2de, anaphora-20230809-bcf0f74/anaphora.asd
+base64, ghcr.io/ocicl/base64@sha256:f3112c96fb01270f1048708af061c0fcf70de1cbc84131d6bf8f40dc9f0b6881, base64-20230809-d0d0f09/base64.asd
+3bmd, ghcr.io/ocicl/3bmd@sha256:2a89907435e7a16a768fc6064f614df6baeafb0375563a2c956e192f5361f4f8, 3bmd-20230813-e68b2d4/3bmd.asd
+3bmd-youtube, ghcr.io/ocicl/3bmd@sha256:2a89907435e7a16a768fc6064f614df6baeafb0375563a2c956e192f5361f4f8, 3bmd-20230813-e68b2d4/3bmd-youtube.asd
+3bmd-youtube-tests, ghcr.io/ocicl/3bmd@sha256:2a89907435e7a16a768fc6064f614df6baeafb0375563a2c956e192f5361f4f8, 3bmd-20230813-e68b2d4/3bmd-youtube-tests.asd
+3bmd-tests, ghcr.io/ocicl/3bmd@sha256:2a89907435e7a16a768fc6064f614df6baeafb0375563a2c956e192f5361f4f8, 3bmd-20230813-e68b2d4/3bmd-tests.asd
+3bmd-ext-wiki-links, ghcr.io/ocicl/3bmd@sha256:2a89907435e7a16a768fc6064f614df6baeafb0375563a2c956e192f5361f4f8, 3bmd-20230813-e68b2d4/3bmd-ext-wiki-links.asd
+3bmd-ext-tables, ghcr.io/ocicl/3bmd@sha256:2a89907435e7a16a768fc6064f614df6baeafb0375563a2c956e192f5361f4f8, 3bmd-20230813-e68b2d4/3bmd-ext-tables.asd
+3bmd-ext-math, ghcr.io/ocicl/3bmd@sha256:2a89907435e7a16a768fc6064f614df6baeafb0375563a2c956e192f5361f4f8, 3bmd-20230813-e68b2d4/3bmd-ext-math.asd
+3bmd-ext-definition-lists, ghcr.io/ocicl/3bmd@sha256:2a89907435e7a16a768fc6064f614df6baeafb0375563a2c956e192f5361f4f8, 3bmd-20230813-e68b2d4/3bmd-ext-definition-lists.asd
+3bmd-ext-code-blocks, ghcr.io/ocicl/3bmd@sha256:2a89907435e7a16a768fc6064f614df6baeafb0375563a2c956e192f5361f4f8, 3bmd-20230813-e68b2d4/3bmd-ext-code-blocks.asd
+esrap, ghcr.io/ocicl/esrap@sha256:4aa76e2db6b685a9d946fe3458f1d84874c92956f4d6c997e9003d1b66d6b37c, esrap-20240130-f42e1ca/esrap.asd
+trivial-with-current-source-form, ghcr.io/ocicl/trivial-with-current-source-form@sha256:2583c03be1eb84e832e44344985b8c182e237fbf1905514c0bbca27791430a8d, trivial-with-current-source-form-20230809-dc3fff9/trivial-with-current-source-form.asd
+colorize, ghcr.io/ocicl/colorize@sha256:6e646e8a88e0311ca26cf3adf5b9a0679a46c7c9ea7d1f07b2c90d24ea770078, colorize-20230808-f5ed4b3/colorize.asd
+html-encode, ghcr.io/ocicl/html-encode@sha256:5cb86ff6ab6a0624baa8f8adadf9830d9fed1ab9adaff0b2e6b4cef9063d1301, html-encode-1.2/html-encode.asd
