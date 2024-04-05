@@ -9,6 +9,13 @@ Usage
 $ ocicl install chat
 ```
 
+This repo also includes a web-chat interface.  Run it like so:
+```
+$ sbcl --eval "(asdf:load-system :web-chat)" --eval "(web-chat:start-server)"
+```
+
+![alt text](static/images/web-chat.png "web-chat UI")
+
 Related Projects
 -----------------
 
