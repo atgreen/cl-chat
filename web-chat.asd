@@ -34,6 +34,7 @@
   :depends-on (:chat
                :3bmd
                :3bmd-ext-code-blocks
+               :3bmd-ext-tables
                :hunchentoot
                :hunchensocket
                :log4cl

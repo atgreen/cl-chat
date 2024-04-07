@@ -349,7 +349,12 @@ legend {
   padding: 0;
 }
 
-ol,
+ol {
+  list-style: decimal;
+  margin: 0;
+  padding: 0;
+}
+
 ul,
 menu {
   list-style: none;

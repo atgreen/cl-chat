@@ -47,13 +47,14 @@
                            (3bmd:parse-string-and-print-to-stream msg s)))))))
     (cl-base64:string-to-base64-string str)))
 
-(setf 3bmd-code-blocks:*code-blocks* t)
+(setf 3bmd-code-blocks:*code-blocks* t
+      3bmd-tables:*tables* t)
 
 (defun render-ai-messages (messages)
   (let ((str (with-output-to-string (stream)
                (dolist (msg messages)
                  (format stream
-                         "<div class=\"flex bg-slate-100 px-4 py-8 dark:bg-slate-900 sm:px-6\"><img class=\"mr-2 flex h-8 w-8 rounded-full sm:mr-4\" src=\"https://dummyimage.com/256x256/354ea1/ffffff&text=G\" /><div class=\"w-full items-start lg:flex-row lg:justify-between\"> <p class=\"max-w-3xl\">~A</p></div></div>"                          (with-output-to-string (s)
+                         "<div class=\"flex bg-slate-100 px-4 py-8 dark:bg-slate-900 sm:px-6\"><img class=\"mr-2 flex h-8 w-8 rounded-full sm:mr-4\" src=\"https://dummyimage.com/256x256/354ea1/ffffff&text=A\" /><div class=\"w-full items-start lg:flex-row lg:justify-between\"> <p class=\"max-w-3xl\">~A</p></div></div>"                          (with-output-to-string (s)
                            (3bmd:parse-string-and-print-to-stream msg s)))))))
     (cl-base64:string-to-base64-string str)))
 
@@ -278,7 +279,8 @@ ws.onmessage = function(event) {
       (hunchensocket:send-text-message user
         (let ((msg ""))
           (format nil "{ \"type\": \"assistant\", \"message\": ~S }"
-                  (render-ai-messages (list (chat:say (slot-value session-data 'chat) (concatenate 'string "Respond to this prompt using pure markdown (but not in a markdown block).  Be sure to force a newline if you want for force formatting: " prompt)
+                  (render-ai-messages (list (chat:say (slot-value session-data 'chat)
+                                                      prompt
                                                       :streaming-callback
                                                       (lambda (token)
                                                         (format t "~A" token)
