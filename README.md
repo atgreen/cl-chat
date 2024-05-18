@@ -10,7 +10,7 @@ $ ocicl install chat
 ```
 The `chat` package is comically small; containing just one class definition and one method.  It simply maintains conversation state for `completions`-based conversations.
 
-In it's simplest form, use:
+In its simplest form, use:
 ```common lisp
 (let ((c (make-instance 'chat)))
   (say c "Tell me a joke"))
