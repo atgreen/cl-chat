@@ -30,7 +30,7 @@
 (defvar *session-data* (make-hash-table :test #'equal))
 (defvar *message-log* (list))
 
-;; CLSEC-2026-0120: Use a separate random token for WebSocket auth
+;; CL-SEC-2026-0120: Use a separate random token for WebSocket auth
 ;; instead of exposing the session cookie value in JavaScript.
 (defvar *ws-token-to-session* (make-hash-table :test #'equal))
 
@@ -40,7 +40,7 @@
 
 (defun sanitize-markdown-html (markdown-string)
   "Convert markdown to HTML via 3bmd, then sanitize to prevent XSS.
-   CLSEC-2026-0118: All user-generated markdown must be sanitized."
+   CL-SEC-2026-0118: All user-generated markdown must be sanitized."
   (sanitize-html:sanitize
    (with-output-to-string (s)
      (3bmd:parse-string-and-print-to-stream markdown-string s))))
@@ -289,7 +289,7 @@ ws.onmessage = function(event) {
   (let* ((json-as-list (json:decode-json-from-string message))
          (prompt (cdr (assoc :message json-as-list))))
     (hunchensocket:send-text-message user (format nil "{ \"type\": \"user\", \"message\": ~S }" (render-user-messages (list prompt))))
-    ;; CLSEC-2026-0120: Resolve ws-token to session key
+    ;; CL-SEC-2026-0120: Resolve ws-token to session key
     (let* ((ws-token (cdr (assoc :session-id json-as-list)))
            (session-key (gethash ws-token *ws-token-to-session*))
            (session-data (when session-key (gethash session-key *session-data*))))
@@ -316,7 +316,7 @@ ws.onmessage = function(event) {
 
 (defun start-server ()
 
-  ;; CLSEC-2026-0117: Don't expose internal errors/backtraces to clients.
+  ;; CL-SEC-2026-0117: Don't expose internal errors/backtraces to clients.
   ;; Errors are still logged server-side via log4cl.
   (setf hunchentoot:*catch-errors-p* t
         hunchentoot:*show-lisp-errors-p* nil
