@@ -30,6 +30,21 @@
 (defvar *session-data* (make-hash-table :test #'equal))
 (defvar *message-log* (list))
 
+;; CLSEC-2026-0120: Use a separate random token for WebSocket auth
+;; instead of exposing the session cookie value in JavaScript.
+(defvar *ws-token-to-session* (make-hash-table :test #'equal))
+
+(defun generate-ws-token ()
+  "Generate a random token for WebSocket authentication."
+  (ironclad:byte-array-to-hex-string (ironclad:random-data 16)))
+
+(defun sanitize-markdown-html (markdown-string)
+  "Convert markdown to HTML via 3bmd, then sanitize to prevent XSS.
+   CLSEC-2026-0118: All user-generated markdown must be sanitized."
+  (sanitize-html:sanitize
+   (with-output-to-string (s)
+     (3bmd:parse-string-and-print-to-stream markdown-string s))))
+
 (defun render-user-messages (messages)
   (let ((str (with-output-to-string (stream)
                (dolist (msg messages)
@@ -43,8 +58,7 @@
         <p>~A</p>
       </div>
     </div>"
-                         (with-output-to-string (s)
-                           (3bmd:parse-string-and-print-to-stream msg s)))))))
+                         (sanitize-markdown-html msg))))))
     (cl-base64:string-to-base64-string str)))
 
 (setf 3bmd-code-blocks:*code-blocks* t
@@ -54,8 +68,8 @@
   (let ((str (with-output-to-string (stream)
                (dolist (msg messages)
                  (format stream
-                         "<div class=\"flex bg-slate-100 px-4 py-8 dark:bg-slate-900 sm:px-6\"><img class=\"mr-2 flex h-8 w-8 rounded-full sm:mr-4\" src=\"https://dummyimage.com/256x256/354ea1/ffffff&text=A\" /><div class=\"w-full items-start lg:flex-row lg:justify-between\"> <p class=\"max-w-3xl\">~A</p></div></div>"                          (with-output-to-string (s)
-                           (3bmd:parse-string-and-print-to-stream msg s)))))))
+                         "<div class=\"flex bg-slate-100 px-4 py-8 dark:bg-slate-900 sm:px-6\"><img class=\"mr-2 flex h-8 w-8 rounded-full sm:mr-4\" src=\"https://dummyimage.com/256x256/354ea1/ffffff&text=A\" /><div class=\"w-full items-start lg:flex-row lg:justify-between\"> <p class=\"max-w-3xl\">~A</p></div></div>"
+                         (sanitize-markdown-html msg))))))
     (cl-base64:string-to-base64-string str)))
 
 (defun web-chat-root ()
@@ -86,12 +100,13 @@
 (easy-routes:defroute index ("/") ()
   (unless hunchentoot:*session*
     (hunchentoot:start-session))
-  (let ((session-data (gethash (hunchentoot:session-cookie-value hunchentoot:*session*) *session-data*)))
-    (log:info "Creating session-data for " (hunchentoot:session-cookie-value hunchentoot:*session*))
-    (setf session-data (make-instance 'session-data :chat (make-instance 'chat :completer (make-instance 'completions:ollama-completer :model "mistral:latest"))))
-    (setf (gethash (hunchentoot:session-cookie-value hunchentoot:*session*) *session-data*) session-data))
-
-  (log:info (hunchentoot:session-cookie-value hunchentoot:*session*))
+  (let* ((session-key (hunchentoot:session-cookie-value hunchentoot:*session*))
+         (ws-token (generate-ws-token)))
+    (log:info "Creating session-data")
+    (let ((session-data (make-instance 'session-data :chat (make-instance 'chat :completer (make-instance 'completions:ollama-completer :model "mistral:latest")))))
+      (setf (gethash session-key *session-data*) session-data)
+      ;; Map ws-token -> session-key so WebSocket handler can find the session
+      (setf (gethash ws-token *ws-token-to-session*) session-key)))
   (markup:write-html
        <html>
          <head>
@@ -100,7 +115,7 @@
            <link rel="stylesheet" href="/css/main.css" />
            <meta name="viewport" content="width=device-width, initial-scale=1" />
            <script type="text/javascript">
-       var sessionId = ',(hunchentoot:session-cookie-value hunchentoot:*session*)';
+       var sessionId = ',ws-token';
        var waitCount = 0;
        var ws
            </script>
@@ -199,7 +214,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const messagesDiv = document.getElementById('chat-messages');
 
     // Replace 'wss://example.com/ws' with your WebSocket server URL
-    ws = new WebSocket('ws://localhost:8081/bongo');
+    // Use secure WebSocket when page is served over HTTPS
+    var wsProto = (location.protocol === 'https:') ? 'wss:' : 'ws:';
+    ws = new WebSocket(wsProto + '//' + location.hostname + ':8081/bongo');
 
     ws.onopen = function(event) {
         console.log('Connection opened');
@@ -272,10 +289,14 @@ ws.onmessage = function(event) {
   (let* ((json-as-list (json:decode-json-from-string message))
          (prompt (cdr (assoc :message json-as-list))))
     (hunchensocket:send-text-message user (format nil "{ \"type\": \"user\", \"message\": ~S }" (render-user-messages (list prompt))))
-    (let* ((session-id (cdr (assoc :session-id json-as-list)))
-           (session-data (gethash session-id *session-data*)))
-      (log:info "Received prompt from session-id " session-id)
-      (log:info session-data)
+    ;; CLSEC-2026-0120: Resolve ws-token to session key
+    (let* ((ws-token (cdr (assoc :session-id json-as-list)))
+           (session-key (gethash ws-token *ws-token-to-session*))
+           (session-data (when session-key (gethash session-key *session-data*))))
+      (unless session-data
+        (log:warn "Invalid or expired WebSocket token")
+        (return-from hunchensocket:text-message-received))
+      (log:info "Received prompt")
       (hunchensocket:send-text-message user
         (let ((msg ""))
           (format nil "{ \"type\": \"assistant\", \"message\": ~S }"
@@ -295,9 +316,11 @@ ws.onmessage = function(event) {
 
 (defun start-server ()
 
+  ;; CLSEC-2026-0117: Don't expose internal errors/backtraces to clients.
+  ;; Errors are still logged server-side via log4cl.
   (setf hunchentoot:*catch-errors-p* t
-        hunchentoot:*show-lisp-errors-p* t
-        hunchentoot:*show-lisp-backtraces-p* t)
+        hunchentoot:*show-lisp-errors-p* nil
+        hunchentoot:*show-lisp-backtraces-p* nil)
 
   (log:info "Starting web-chat")
 

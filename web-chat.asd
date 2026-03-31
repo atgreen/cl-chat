@@ -37,6 +37,7 @@
                :3bmd-ext-tables
                :hunchentoot
                :hunchensocket
+               :sanitize-html
                :log4cl
                :markup
                :easy-routes
